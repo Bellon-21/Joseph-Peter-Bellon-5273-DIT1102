@@ -1,22 +1,16 @@
 # Joseph-Peter-Bellon-5273-DIT1102
 Object Oriented Programming Assignment
 
-##Operation.py File
-[Operation.py](https://github.com/user-attachments/files/23360447/Operation.py)
-[Uplo
+##Operations.py 
+[operations.py](https://github.com/user-attachments/files/23417263/operations.py)
 """
 operations.py
 Core functions for the Mini Library Management System.
-
-Data structures:
-- books: dict[str, dict]
-- members: list[dict]
-- genres: tuple[str, ...]
 """
 
 from typing import Dict, List, Optional, Tuple
 
-# Data structures
+# ------------------ Data Structures ------------------
 books: Dict[str, Dict] = {}
 members: List[Dict] = []
 genres: Tuple[str, ...] = ("Fiction", "Non-Fiction", "Sci-Fi", "Biography", "Mystery", "Romance")
@@ -24,25 +18,19 @@ genres: Tuple[str, ...] = ("Fiction", "Non-Fiction", "Sci-Fi", "Biography", "Mys
 MAX_BORROW = 3  # configurable borrow limit
 
 
-# Helper
+# ------------------ Helper ------------------
 def find_member(member_id: str) -> Optional[Dict]:
+    """Find member by ID."""
     for m in members:
         if m["member_id"] == member_id:
             return m
     return None
 
 
-# Book operations
+# ------------------ Book Operations ------------------
 def add_book(isbn: str, title: str, author: str, genre: str, total_copies: int) -> bool:
-    """
-    Add a book if ISBN unique and genre valid.
-    Returns True on success, False otherwise.
-    """
-    if isbn in books:
-        return False
-    if genre not in genres:
-        return False
-    if total_copies < 1:
+    """Add a book if ISBN unique and genre valid."""
+    if isbn in books or genre not in genres or total_copies < 1:
         return False
     books[isbn] = {
         "title": title,
@@ -52,6 +40,7 @@ def add_book(isbn: str, title: str, author: str, genre: str, total_copies: int) 
         "available_copies": total_copies
     }
     return True
+
 
 def search_books(query: str) -> List[Dict]:
     """Search by substring in title or author (case-insensitive)."""
@@ -64,8 +53,10 @@ def search_books(query: str) -> List[Dict]:
             results.append(item)
     return results
 
-def update_book(isbn: str, title: Optional[str]=None, author: Optional[str]=None,
-                genre: Optional[str]=None, total_copies: Optional[int]=None) -> bool:
+
+def update_book(isbn: str, title: Optional[str] = None, author: Optional[str] = None,
+                genre: Optional[str] = None, total_copies: Optional[int] = None) -> bool:
+    """Update book details."""
     if isbn not in books:
         return False
     book = books[isbn]
@@ -85,8 +76,9 @@ def update_book(isbn: str, title: Optional[str]=None, author: Optional[str]=None
         book["available_copies"] = max(0, book["available_copies"] + diff)
     return True
 
+
 def delete_book(isbn: str) -> bool:
-    """Delete a book only if all copies available (i.e., none borrowed)."""
+    """Delete a book only if all copies are available."""
     if isbn not in books:
         return False
     book = books[isbn]
@@ -96,8 +88,9 @@ def delete_book(isbn: str) -> bool:
     return True
 
 
-# Member operations
+# ------------------ Member Operations ------------------
 def add_member(member_id: str, name: str, email: str) -> bool:
+    """Add a library member."""
     if find_member(member_id) is not None:
         return False
     members.append({
@@ -108,7 +101,9 @@ def add_member(member_id: str, name: str, email: str) -> bool:
     })
     return True
 
-def update_member(member_id: str, name: Optional[str]=None, email: Optional[str]=None) -> bool:
+
+def update_member(member_id: str, name: Optional[str] = None, email: Optional[str] = None) -> bool:
+    """Update member details."""
     mem = find_member(member_id)
     if mem is None:
         return False
@@ -118,63 +113,58 @@ def update_member(member_id: str, name: Optional[str]=None, email: Optional[str]
         mem["email"] = email
     return True
 
+
 def delete_member(member_id: str) -> bool:
+    """Delete a member only if they have returned all borrowed books."""
     mem = find_member(member_id)
-    if mem is None:
-        return False
-    if len(mem["borrowed_books"]) > 0:
+    if mem is None or len(mem["borrowed_books"]) > 0:
         return False
     members.remove(mem)
     return True
 
 
-# Borrowing operations
+# ------------------ Borrowing Operations ------------------
 def borrow_book(member_id: str, isbn: str) -> bool:
+    """Allow a member to borrow a book if available."""
     mem = find_member(member_id)
-    if mem is None:
-        return False
-    if isbn not in books:
+    if mem is None or isbn not in books:
         return False
     book = books[isbn]
-    if book["available_copies"] <= 0:
-        return False
-    if len(mem["borrowed_books"]) >= MAX_BORROW:
+    if book["available_copies"] <= 0 or len(mem["borrowed_books"]) >= MAX_BORROW:
         return False
     book["available_copies"] -= 1
     mem["borrowed_books"].append(isbn)
     return True
 
+
 def return_book(member_id: str, isbn: str) -> bool:
+    """Return a borrowed book."""
     mem = find_member(member_id)
-    if mem is None:
-        return False
-    if isbn not in mem["borrowed_books"]:
+    if mem is None or isbn not in mem["borrowed_books"]:
         return False
     mem["borrowed_books"].remove(isbn)
     if isbn in books:
-        books[isbn]["available_copies"] = min(books[isbn]["total_copies"], books[isbn]["available_copies"] + 1)
+        books[isbn]["available_copies"] = min(
+            books[isbn]["total_copies"], books[isbn]["available_copies"] + 1)
     return True
 
-# Utility
+
+# ------------------ Utility ------------------
 def reset_library():
     """Clear all data (useful for tests/demo)."""
     books.clear()
     members.clear()
-ading Operation.py…]()
+perations.py…]()
+
 
 ##demo.py
-[demo.py](https://github.com/user-attachments/files/23360519/demo.py)
-"""
-demo.py
-Demonstrates usage of the library operations.
-Run: python demo.py
-"""
+[demo.py](https://github.com/user-attachments/files/23417298/demo.py)
 
 from operations import (
-    add_book, add_member, borrow_book, return_book,
-    search_books, update_book, update_member, delete_book,
-    delete_member, books, members, reset_library, genres
+    genres, add_book, add_member, borrow_book, return_book, delete_book,
+    delete_member, update_book, search_books, reset_library, books, members
 )
+
 
 def print_state():
     print("\n--- BOOKS ---")
@@ -183,6 +173,7 @@ def print_state():
     print("\n--- MEMBERS ---")
     for m in members:
         print(m)
+
 
 def main():
     reset_library()
@@ -205,8 +196,6 @@ def main():
     print("Alice borrows 978-002:", borrow_book("M001", "978-002"))
     print("Alice borrows 978-003:", borrow_book("M001", "978-003"))
     print("Alice tries 4th borrow (should fail):", borrow_book("M001", "978-001"))
-
-    # Bob tries to borrow 978-003 (none left)
     print("Bob borrows 978-003 (should fail):", borrow_book("M002", "978-003"))
 
     print_state()
@@ -218,12 +207,13 @@ def main():
 
     # Update and delete attempts
     print("\nUpdates:")
-    print("Update 978-002 title and copies:", update_book("978-002", title="Data Science Advanced", total_copies=3))
+    print("Update 978-002 title and copies:",
+          update_book("978-002", title="Data Science Advanced", total_copies=3))
     print("Attempt delete 978-001 while borrowed (should fail):", delete_book("978-001"))
 
     # Member delete
     print("\nMember delete tests:")
-    print("Delete Bob (should fail if he has borrowed):", delete_member("M002"))
+    print("Delete Bob (should fail if borrowed):", delete_member("M002"))
     print("Bob returns 978-003:", return_book("M002", "978-003"))
     print("Delete Bob now (should succeed):", delete_member("M002"))
 
@@ -232,22 +222,23 @@ def main():
     # Search
     print("\nSearch for 'Data':", search_books("Data"))
 
+
 if __name__ == "__main__":
     main()
 
+
 ##Test.py
-[test.py](https://github.com/user-attachments/files/23360531/test.py)
+[test.py](https://github.com/user-attachments/files/23417366/test.py)
 """
 tests.py
-Simple assert-based tests for the system.
-Run: python tests.py
+Automated tests for the Mini Library Management System.
 """
 
 from operations import (
     add_book, add_member, borrow_book, return_book,
-    delete_book, delete_member, update_book, search_books,
-    reset_library, books, members
+    delete_book, delete_member, update_book, search_books, reset_library
 )
+
 
 def run_tests():
     reset_library()
@@ -259,7 +250,7 @@ def run_tests():
     # Test 3 - add member and borrow
     assert add_member("U1", "User One", "u1@mail.com") is True
     assert borrow_book("U1", "100A") is True
-    # Test 4 - cannot delete book when borrowed
+    # Test 4 - cannot delete a book when borrowed
     assert delete_book("100A") is False
     # Test 5 - return then delete
     assert return_book("U1", "100A") is True
@@ -274,7 +265,8 @@ def run_tests():
     sb = search_books("Another")
     assert isinstance(sb, list) and sb and sb[0]["title"] == "Another 2"
 
-    print("All tests passed!")
+    print(" All tests passed successfully!")
+
 
 if __name__ == "__main__":
     run_tests()
